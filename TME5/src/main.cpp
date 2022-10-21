@@ -1,13 +1,13 @@
 #include "Vec3D.h"
 #include "Rayon.h"
-#include "Scene.h"
+
 #include <iostream>
 #include <algorithm>
 #include <fstream>
 #include <limits>
 #include <random>
 #include "Pool.h"
-
+#include "Job.h"
 using namespace std;
 using namespace pr;
 
