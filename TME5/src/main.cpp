@@ -6,6 +6,7 @@
 #include <fstream>
 #include <limits>
 #include <random>
+#include "Pool.h"
 
 using namespace std;
 using namespace pr;
