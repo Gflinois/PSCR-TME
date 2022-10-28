@@ -4,20 +4,21 @@
 #include <cstdlib>
 #include <mutex>
 #include <condition_variable>
+#include <cstring>
 
 namespace pr {
 
 // MT safe version of the Queue, non blocking.
 template <typename T>
 class Queue {
-	bool block;
-	std::condition_variable cv_cons;
-	std::condition_variable cv_prod;
 	T ** tab;
 	const size_t allocsize;
 	size_t begin;
 	size_t sz;
 	mutable std::mutex m;
+
+	std::condition_variable l;
+		bool block;
 
 	// fonctions private, sans protection mutex
 	bool empty() const {
@@ -35,34 +36,40 @@ public:
 		std::unique_lock<std::mutex> lg(m);
 		return sz;
 	}
-	T* pop() {
+T* pop() {
 		std::unique_lock<std::mutex> lg(m);
-		while (empty() && block){
-			cv_cons.wait(lg);
+		while (empty()and block) {
+			l.wait(lg);
 		}
-		if (empty() && !block) {
+		if (empty()) {
 			return nullptr;
 		}
+		l.notify_all();
 		auto ret = tab[begin];
 		tab[begin] = nullptr;
 		sz--;
 		begin = (begin + 1) % allocsize;
-		cv_prod.notify_one();
 		return ret;
 	}
 	bool push(T* elt) {
 		std::unique_lock<std::mutex> lg(m);
-		while (full() && block) {
-			cv_prod.wait(lg);
-		}
-		if (full() && !block) {
-			return false;
+		while (full()) {
+			l.wait(lg);
 		}
 		tab[(begin + sz) % allocsize] = elt;
 		sz++;
-		cv_cons.notify_one();
+		l.notify_all();
 		return true;
 	}
+
+	void SetBlocking(){
+		std::unique_lock<std::mutex> lg(m);
+		block = false;
+		l.notify_all();
+	}
+
+
+
 	~Queue() {
 		// ?? lock a priori inutile, ne pas detruire si on travaille encore avec
 		for (size_t i = 0; i < sz; i++) {
@@ -71,7 +78,6 @@ public:
 		}
 		delete[] tab;
 	}
-
 };
 
 }
