@@ -24,7 +24,7 @@ void randsleep() {
 void atkHandler(int signum){
     pv--;
     if (pv){
-        std::cout<<"il reste "<<pv<<"points de vies à"<<name<<std::endl;
+        std::cout<<"il reste "<<pv<<" points de vies à"<<name<<std::endl;
         return;
     }
     std::cout<<name<<" est mort."<<std::endl;
@@ -42,17 +42,16 @@ void attaque (pid_t adversaire){
     s.sa_handler = atkHandler;
 
     sigaction(SIGINT,&s,NULL);
-    
+    randsleep();
     if(kill(adversaire,SIGINT)) {
-        wait(0);
         exit(0);
     }
-    randsleep();
+    
     return ;
 }
 
 void defense (){
-    std::cout<<name<<" défend."<<std::endl; 
+
     struct sigaction s;
     sigset_t sig_proc;
     sigemptyset(&sig_proc);
@@ -61,6 +60,7 @@ void defense (){
     s.sa_handler = SIG_IGN;
 
     sigaction(SIGINT,&s,NULL);
+    std::cout<<name<<" défend."<<std::endl; 
     randsleep();
     return ;
 }
@@ -68,7 +68,6 @@ void defense (){
 void combat(pid_t adversaire){
     randsleep();
     std::cout<<name<<" se bat."<<std::endl;
-    std::cout<<adversaire<<" se bat."<<std::endl;
     
     while (true){
         defense();
