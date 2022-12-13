@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <sys/wait.h>
 #include <iostream>
-#include <ostream>
 
 using namespace std;
 int main(){
